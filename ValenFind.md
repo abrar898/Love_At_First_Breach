@@ -110,17 +110,17 @@ FLAG: THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
 ✅ That’s the final flag.
 
 ⚡ Lessons Learned
--Never trust user input – always sanitize file paths to prevent LFI.
--Do not hardcode secrets – store keys securely outside source code.
--Secure admin endpoints – require authentication and limit access.
--Database safety – avoid exposing databases directly to the public.
--Audit code for dynamic file access – open() or template loading can be exploited.
+- Never trust user input – always sanitize file paths to prevent LFI.
+- Do not hardcode secrets – store keys securely outside source code.
+- Secure admin endpoints – require authentication and limit access.
+- Database safety – avoid exposing databases directly to the public.
+- Audit code for dynamic file access – open() or template loading can be exploited.
 
 🏁 Conclusion
--This challenge demonstrates:
--The power of Local File Inclusion (LFI).
--The dangers of exposing admin API keys.
--How sensitive information can be leaked through poor server design.
+- This challenge demonstrates:
+- The power of Local File Inclusion (LFI).
+- The dangers of exposing admin API keys.
+- How sensitive information can be leaked through poor server design.
 
 Flag:
 ```
