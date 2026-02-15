@@ -39,8 +39,9 @@ Here, the layout parameter is directly used to access files, without sanitizatio
 The Flask server contains multiple security issues:
 
 Hardcoded secrets:
-
+```
 ADMIN_API_KEY = "CUPID_MASTER_KEY_2024_XOXO"
+```
 Hardcoding API keys is dangerous because once discovered, attackers can access privileged endpoints.
 
 Unrestricted file read via LFI:
@@ -84,21 +85,25 @@ curl -H "X-Valentine-Token: CUPID_MASTER_KEY_2024_XOXO" \
 ```
 Step 4: Inspect the Database
 Open the database using SQLite:
-
+```
 sqlite3 valenfind.db
+```
 Check tables:
-
+```
 .tables
+```
 Query the users table:
-
+```
 select * from users;
+```
 Step 5: Locate the Flag
 The flag is stored in the address field of the admin user (cupid):
-
+```
 FLAG: THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
+```
 ✅ That’s the final flag.
 
-⚡ Lessons Learned
+##⚡ Lessons Learned
 Never trust user input – always sanitize file paths to prevent LFI.
 
 Do not hardcode secrets – store keys securely outside source code.
@@ -109,7 +114,7 @@ Database safety – avoid exposing databases directly to the public.
 
 Audit code for dynamic file access – open() or template loading can be exploited.
 
-🏁 Conclusion
+##🏁 Conclusion
 This challenge demonstrates:
 
 The power of Local File Inclusion (LFI).
