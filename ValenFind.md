@@ -6,9 +6,9 @@
 Your mission is to identify and extract the **flag** hidden within the system.  
 
 The app is accessible at:  
-
+```
 [http://10.49.158.106:5000](http://10.49.158.106:5000)  
-
+```
 ---
 
 ## 🔍 Understanding the Vulnerability
@@ -119,8 +119,8 @@ The dangers of exposing admin API keys.
 How sensitive information can be leaked through poor server design.
 
 Flag:
-
+```
 THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
-
+```
 ---
 
